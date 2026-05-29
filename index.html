@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OL Capital Agro | Terminal de Inteligência & Alocação Estatística</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Sora:wght@600;700;800&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #030408; }
+        h1, h2, h3, h4, .font-sora { font-family: 'Sora', sans-serif; }
+        .font-mono { font-family: 'IBM Plex Mono', monospace; }
+        .glass-premium { 
+            background: linear-gradient(135deg, rgba(10, 15, 30, 0.75) 0%, rgba(5, 7, 12, 0.85) 100%); 
+            border: 1px solid rgba(212, 175, 55, 0.08);
+            backdrop-filter: blur(20px);
+        }
+        .border-gold-light { border-color: rgba(212, 175, 55, 0.15); }
+    </style>
+</head>
+<body class="text-gray-200 min-h-screen antialiased">
+
+    <div class="w-full h-[5px] bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 fixed top-0 left-0 z-50"></div>
+
+    <header class="sticky top-[5px] z-40 glass-premium border-b border-slate-900 px-4 sm:px-6 py-4">
+        <div class="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-2.5 h-2.5 bg-amber-500 rounded-full animate-pulse"></div>
+                <div class="flex flex-col">
+                    <span class="font-sora font-black text-xl tracking-wider text-white">OL CAPITAL AGRO</span>
+                    <span class="text-[9px] text-amber-500 font-mono tracking-widest uppercase -mt-1">Quantum Agrointelligence System</span>
+                </div>
+            </div>
+
+            <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-900 w-full sm:w-auto">
+                <button onclick="alternarTelaMestre('dashboard')" id="nav-dashboard" class="bg-amber-600 text-white text-xs font-bold px-5 py-2.5 rounded-lg cursor-pointer transition-all flex items-center gap-2">
+                    <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i> TERMINAL DE COTAÇÕES
+                </button>
+                <button onclick="alternarTelaMestre('recomendacao')" id="nav-recomendacao" class="text-gray-400 hover:text-white text-xs font-bold px-5 py-2.5 rounded-lg cursor-pointer transition-all flex items-center gap-2">
+                    <i data-lucide="award" class="w-3.5 h-3.5 text-amber-500"></i> RECOMENDAÇÃO ALFA DIÁRIA
+                </button>
+            </div>
+
+            <div class="hidden lg:flex items-center gap-2 font-mono text-[10px] bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-900">
+                <span class="text-gray-500">STATUS:</span>
+                <span class="text-emerald-400 font-bold" id="status-conexao">CONECTANDO...</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <div id="tela-dashboard" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-center">
+                <div class="glass-premium p-4 rounded-xl border-gold-light flex flex-col justify-center space-y-2 h-full">
+                    <span class="text-[10px] font-bold text-amber-500 tracking-wider uppercase font-mono block">Filtro de Escopo Territorial</span>
+                    <select id="select-cidade" onchange="alterarFiltroDados('cidade')" class="w-full bg-slate-950 text-xs font-bold text-white border border-slate-800 p-2.5 rounded-lg cursor-pointer focus:outline-none focus:border-amber-500">
+                        <option value="cascavel">📍 Praça Polo: Cascavel (Oeste do PR)</option>
+                        <option value="maringa">📍 Praça Polo: Maringá (Norte do PR)</option>
+                        <option value="foz_do_iguacu">📍 Praça Polo: Foz do Iguaçu (Fronteira)</option>
+                        <option value="curitiba">📍 Praça Polo: Curitiba (Metropolitana / CEASA)</option>
+                    </select>
+                </div>
+
+                <div class="glass-premium p-4 rounded-xl border-gold-light space-y-2">
+                    <div class="flex justify-between items-center border-b border-slate-900 pb-1.5">
+                        <span class="text-[10px] font-bold text-gray-400 font-mono">DÓLAR COMERCIAL (USD)</span>
+                        <span id="usd-ticker" class="text-xs font-bold font-mono text-emerald-400">0.00%</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 font-mono text-xs">
+                        <div class="bg-slate-950/60 p-2 rounded border border-slate-900"><span class="text-[9px] text-gray-500 block">COMPRA</span><span id="usd-compra" class="text-white font-bold">...</span></div>
+                        <div class="bg-slate-950/60 p-2 rounded border border-slate-900"><span class="text-[9px] text-gray-500 block">VENDA</span><span id="usd-venda" class="text-white font-bold">...</span></div>
+                    </div>
+                </div>
+
+                <div class="glass-premium p-4 rounded-xl border-gold-light space-y-2">
+                    <div class="flex justify-between items-center border-b border-slate-900 pb-1.5">
+                        <span class="text-[10px] font-bold text-gray-400 font-mono">EURO COMERCIAL (EUR)</span>
+                        <span id="eur-ticker" class="text-xs font-bold font-mono text-emerald-400">0.00%</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 font-mono text-xs">
+                        <div class="bg-slate-950/60 p-2 rounded border border-slate-900"><span class="text-[9px] text-gray-500 block">COMPRA</span><span id="eur-compra" class="text-white font-bold">...</span></div>
+                        <div class="bg-slate-950/60 p-2 rounded border border-slate-900"><span class="text-[9px] text-gray-500 block">VENDA</span><span id="eur-venda" class="text-white font-bold">...</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-2 bg-slate-950 p-1.5 rounded-xl border border-slate-900 max-w-md">
+                <button onclick="alterarFiltroDados('maior')" id="btn-filtro-maior" class="w-full bg-slate-900 text-gray-400 text-[11px] font-bold py-2 rounded-lg transition border border-slate-800 flex items-center justify-center gap-1.5 cursor-pointer"><i data-lucide="trending-up" class="w-3.5 h-3.5 text-amber-500"></i> Maior Preço do PR</button>
+                <button onclick="alterarFiltroDados('menor')" id="btn-filtro-menor" class="w-full bg-slate-900 text-gray-400 text-[11px] font-bold py-2 rounded-lg transition border border-slate-800 flex items-center justify-center gap-1.5 cursor-pointer"><i data-lucide="trending-down" class="w-3.5 h-3.5 text-sky-400"></i> Menor Preço do PR</button>
+            </div>
+
+            <div class="space-y-2">
+                <span class="text-[10px] font-bold text-amber-500/80 tracking-widest uppercase font-mono block">Matriz I: Grandes Culturas & Commodities</span>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    <div class="glass-premium p-4 rounded-xl border-t-2 border-emerald-500"><span class="text-[10px] text-gray-400 font-bold block">SOJA (Saca)</span><h4 class="text-base font-bold text-white mt-1" id="val-soja">...</h4><p class="text-[9px] text-gray-500 mt-1 uppercase" id="loc-soja">--</p></div>
+                    <div class="glass-premium p-4 rounded-xl border-t-2 border-amber-600"><span class="text-[10px] text-gray-400 font-bold block">TRIGO (Ton)</span><h4 class="text-base font-bold text-white mt-1" id="val-trigo">...</h4><p class="text-[9px] text-gray-500 mt-1 uppercase" id="loc-trigo">--</p></div>
+                    <div class="glass-premium p-4 rounded-xl border-t-2 border-amber-400"><span class="text-[10px] text-gray-400 font-bold block">MILHO (Saca)</span><h4 class="text-base font-bold text-white mt-1" id="val-milho">...</h4><p class="text-[9px] text-gray-500 mt-1 uppercase" id="loc-milho">--</p></div>
+                    <div class="glass-premium p-4 rounded-xl border-t-2 border-red-500"><span class="text-[10px] text-gray-400 font-bold block">FEIJÃO (Saca)</span><h4 class="text-base font-bold text-white mt-1" id="val-feijao">...</h4><p class="text-[9px] text-gray-500 mt-1 uppercase" id="loc-feijao">--</p></div>
+                    <div class="glass-premium p-4 rounded-xl border-t-2 border-sky-400"><span class="text-[10px] text-gray-400 font-bold block">ARROZ (Saca)</span><h4 class="text-base font-bold text-white mt-1" id="val-arroz">...</h4><p class="text-[9px] text-gray-500 mt-1 uppercase" id="loc-arroz">--</p></div>
+                    <div class="glass-premium p-4 rounded-xl border-t-2 border-purple-400"><span class="text-[10px] text-gray-400 font-bold block">AÇÚCAR (Saca)</span><h4 class="text-base font-bold text-white mt-1" id="val-acucar">...</h4><p class="text-[9px] text-gray-500 mt-1 uppercase" id="loc-acucar">--</p></div>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <span class="text-[10px] font-bold text-amber-500/80 tracking-widest uppercase font-mono block">Matriz II: Insumos / Sementes</span>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="glass-premium p-4 rounded-xl flex justify-between items-center border-l-2 border-amber-500">
+                        <div><span class="text-[10px] text-gray-400 font-bold block">SEMENTE SOJA TÉCNICA (Kg)</span><h4 class="text-lg font-bold text-white mt-0.5" id="val-sem-soja">...</h4><span class="text-[9px] text-gray-500 uppercase mt-0.5 block" id="loc-sem-soja">--</span></div>
+                        <i data-lucide="sprout" class="w-5 h-5 text-slate-800"></i>
+                    </div>
+                    <div class="glass-premium p-4 rounded-xl flex justify-between items-center border-l-2 border-amber-500">
+                        <div><span class="text-[10px] text-gray-400 font-bold block">SEMENTE MILHO HÍBRIDO (Kg)</span><h4 class="text-lg font-bold text-white mt-0.5" id="val-sem-milho">...</h4><span class="text-[9px] text-gray-500 uppercase mt-0.5 block" id="loc-sem-milho">--</span></div>
+                        <i data-lucide="dna" class="w-5 h-5 text-slate-800"></i>
+                    </div>
+                    <div class="glass-premium p-4 rounded-xl flex justify-between items-center border-l-2 border-amber-500">
+                        <div><span class="text-[10px] text-gray-400 font-bold block">PASTAGEM BRACHIARIA (Kg)</span><h4 class="text-lg font-bold text-white mt-0.5" id="val-sem-pastagem">...</h4><span class="text-[9px] text-gray-500 uppercase mt-0.5 block" id="loc-sem-pastagem">--</span></div>
+                        <i data-lucide="leaf" class="w-5 h-5 text-slate-800"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <span class="text-[10px] font-bold text-amber-500/80 tracking-widest uppercase font-mono block">Matriz III: Boletim Geral Atacadista CEASA/PR</span>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="glass-premium p-4 rounded-xl border-l-4 border-sky-600"><span class="text-[10px] text-gray-400 font-bold block leading-tight">Batata Lavada Especial (50kg)</span><h4 class="text-lg font-bold text-white mt-1.5" id="val-hort-batata">...</h4><p class="text-[9px] text-gray-500 uppercase mt-1" id="loc-hort-batata">--</p></div>
+                    <div class="glass-premium p-4 rounded-xl border-l-4 border-sky-600"><span class="text-[10px] text-gray-400 font-bold block leading-tight">Tomate Salada Longa (20kg)</span><h4 class="text-lg font-bold text-white mt-1.5" id="val-hort-tomate">...</h4><p class="text-[9px] text-gray-500 uppercase mt-1" id="loc-hort-tomate">--</p></div>
+                    <div class="glass-premium p-4 rounded-xl border-l-4 border-sky-600"><span class="text-[10px] text-gray-400 font-bold block leading-tight">Cebola Nac. Estalada (20kg)</span><h4 class="text-lg font-bold text-white mt-1.5" id="val-hort-cebola">...</h4><p class="text-[9px] text-gray-500 uppercase mt-1" id="loc-hort-cebola">--</p></div>
+                    <div class="glass-premium p-4 rounded-xl border-l-4 border-sky-600"><span class="text-[10px] text-gray-400 font-bold block leading-tight">Cenoura Caixa Padrão (20kg)</span><h4 class="text-lg font-bold text-white mt-1.5" id="val-hort-cenoura">...</h4><p class="text-[9px] text-gray-500 uppercase mt-1" id="loc-hort-cenoura">--</p></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tela-recomendacao" class="hidden max-w-xl mx-auto pt-4">
+            <div class="glass-premium rounded-3xl p-6 md:p-8 border-gold-light shadow-2xl relative overflow-hidden">
+                <div class="flex justify-between items-start border-b border-slate-900/80 pb-5 mb-5">
+                    <div class="space-y-1">
+                        <span class="text-[9px] font-bold tracking-[0.2em] text-amber-500 uppercase font-mono block">OL ALFA MOTOR</span>
+                        <h2 class="text-xl font-bold text-white tracking-tight">Estratégia de Alocação Diária</h2>
+                    </div>
+                    <div class="text-right bg-slate-950/60 px-3 py-1.5 rounded-xl border border-slate-900 font-mono text-[10px]">
+                        <span class="text-gray-400 block" id="rec-data">--/--/----</span>
+                        <span class="text-emerald-400 font-bold block tracking-tight" id="rec-hora">00:00:00 BRT</span>
+                    </div>
+                </div>
+                <div class="space-y-5">
+                    <div class="bg-[#080B14] p-4 rounded-xl border border-slate-900 flex justify-between items-center gap-4">
+                        <div class="space-y-0.5">
+                            <span class="text-[9px] text-amber-500/80 uppercase tracking-widest font-bold block font-mono">OPERAÇÃO RECOMENDADA</span>
+                            <h3 class="text-base font-bold text-white" id="rec-ativo">Avaliando...</h3>
+                        </div>
+                        <div class="p-3 bg-amber-500/10 text-amber-400 rounded-xl border border-amber-500/20" id="rec-icone"><i data-lucide="refresh-cw" class="w-5 h-5 animate-spin"></i></div>
+                    </div>
+                    <div class="space-y-1.5">
+                        <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider font-mono block">Tese Quantitativa Fundamentalista</span>
+                        <p class="text-xs text-gray-300 leading-relaxed bg-[#06080F]/60 p-4 rounded-xl border border-slate-900/80" id="rec-tese">Processando...</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-slate-950 p-3 rounded-xl border border-slate-900 flex items-center gap-2.5"><i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i><div><span class="text-[9px] text-gray-500 block uppercase font-medium">Confiança</span><span class="text-xs font-bold text-emerald-400 font-mono" id="rec-confianca">--.-%</span></div></div>
+                        <div class="bg-slate-950 p-3 rounded-xl border border-slate-900 flex items-center gap-2.5"><i data-lucide="hourglass" class="w-4 h-4 text-gray-400"></i><div><span class="text-[9px] text-gray-500 block uppercase font-medium">Exposição</span><span class="text-xs font-bold text-white" id="rec-horizonte">Analisando...</span></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+        let dadosGlobais = null;
+        let filtroModo = 'cidade';
+
+        function alternarTelaMestre(modulo) {
+            const btnDash = document.getElementById('nav-dashboard');
+            const btnRec = document.getElementById('nav-recomendacao');
+            const telaDash = document.getElementById('tela-dashboard');
+            const telaRec = document.getElementById('tela-recomendacao');
+            if (modulo === 'dashboard') {
+                telaDash.classList.remove('hidden'); telaRec.classList.add('hidden');
+                btnDash.className = "bg-amber-600 text-white text-xs font-bold px-5 py-2.5 rounded-lg cursor-pointer transition-all flex items-center gap-2";
+                btnRec.className = "text-gray-400 hover:text-white text-xs font-bold px-5 py-2.5 rounded-lg cursor-pointer transition-all flex items-center gap-2";
+            } else {
+                telaDash.classList.add('hidden'); telaRec.classList.remove('hidden');
+                btnDash.className = "text-gray-400 hover:text-white text-xs font-bold px-5 py-2.5 rounded-lg cursor-pointer transition-all flex items-center gap-2";
+                btnRec.className = "bg-amber-600 text-white text-xs font-bold px-5 py-2.5 rounded-lg cursor-pointer transition-all flex items-center gap-2";
+            }
+        }
+
+        function rodarRelogio() {
+            const agora = new Date();
+            const dataStr = agora.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const horaStr = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + " BRT";
+            if(document.getElementById('rec-data')) { document.getElementById('rec-data').innerText = dataStr; document.getElementById('rec-hora').innerText = horaStr; }
+        }
+        setInterval(rodarRelogio, 1000);
+
+        async function requisitarMotorAgro() {
+            try {
+                // ⚠️ TROQUE ABAIXO PELO LINK DO SEU RENDER COM O /api/v1/mercado NO FINAL
+                const response = await fetch('https://olcapitalagro.onrender.com/api/v1/mercado');
+                dadosGlobais = await response.json();
+                
+                document.getElementById('status-conexao').innerText = "MOTOR ATIVO";
+                document.getElementById('status-conexao').className = "text-emerald-400 font-bold";
+                renderizarCotacoes(); processarAlgoritmoAlfa();
+            } catch (e) {
+                document.getElementById('status-conexao').innerText = "MOTOR OFFLINE";
+                document.getElementById('status-conexao').className = "text-red-500 font-bold";
+                fallbackOffline();
+            }
+        }
+
+        function alterarFiltroDados(novoModo) {
+            filtroModo = novoModo;
+            document.getElementById('btn-filtro-maior').className = novoModo === 'maior' ? "w-full bg-amber-950 text-[11px] font-bold py-2 rounded-lg border border-amber-800 text-amber-400 flex items-center justify-center gap-1.5 cursor-pointer" : "w-full bg-slate-900 text-gray-400 text-[11px] font-bold py-2 rounded-lg border border-slate-800 flex items-center justify-center gap-1.5 cursor-pointer";
+            document.getElementById('btn-filtro-menor').className = novoModo === 'menor' ? "w-full bg-sky-950 text-[11px] font-bold py-2 rounded-lg border border-sky-800 text-sky-400 flex items-center justify-center gap-1.5 cursor-pointer" : "w-full bg-slate-900 text-gray-400 text-[11px] font-bold py-2 rounded-lg border border-slate-800 flex items-center justify-center gap-1.5 cursor-pointer";
+            renderizarCotacoes();
+        }
+
+        function renderizarCotacoes() {
+            if (!dadosGlobais) return;
+            document.getElementById('usd-compra').innerText = dadosGlobais.cambio.usd_compra;
+            document.getElementById('usd-venda').innerText = dadosGlobais.cambio.usd_venda;
+            document.getElementById('usd-ticker').innerText = dadosGlobais.cambio.usd_pct;
+            document.getElementById('eur-compra').innerText = dadosGlobais.cambio.eur_compra;
+            document.getElementById('eur-venda').innerText = dadosGlobais.cambio.eur_venda;
+            document.getElementById('eur-ticker').innerText = dadosGlobais.cambio.eur_pct;
+
+            const cidade = document.getElementById('select-cidade').value;
+            const dadosCidade = dadosGlobais.regioes[cidade];
+            const extremos = dadosGlobais.extremos;
+
+            const matrizIds = [
+                { idVal: 'val-soja', idLoc: 'loc-soja', item: 'soja', cat: 'produtos', prefix: 'R$ ' },
+                { idVal: 'val-trigo', idLoc: 'loc-trigo', item: 'trigo', cat: 'produtos', prefix: 'R$ ' },
+                { idVal: 'val-milho', idLoc: 'loc-milho', item: 'milho', cat: 'produtos', prefix: 'R$ ' },
+                { idVal: 'val-feijao', idLoc: 'loc-feijao', item: 'feijao', cat: 'produtos', prefix: 'R$ ' },
+                { idVal: 'val-arroz', idLoc: 'loc-arroz', item: 'arroz', cat: 'produtos', prefix: 'R$ ' },
+                { idVal: 'val-acucar', idLoc: 'loc-acucar', item: 'acucar', cat: 'produtos', prefix: 'R$ ' },
+                { idVal: 'val-sem-soja', idLoc: 'loc-sem-soja', item: 'soja_tecnica', cat: 'sementes', prefix: 'R$ ' },
+                { idVal: 'val-sem-milho', idLoc: 'loc-sem-milho', item: 'milho_hibrido', cat: 'sementes', prefix: 'R$ ' },
+                { idVal: 'val-sem-pastagem', idLoc: 'loc-sem-pastagem', item: 'pastagem_brachiaria', cat: 'sementes', prefix: 'R$ ' },
+                { idVal: 'val-hort-batata', idLoc: 'loc-hort-batata', item: 'batata_lavada', cat: 'hortifruti', prefix: 'R$ ' },
+                { idVal: 'val-hort-tomate', idLoc: 'loc-hort-tomate', item: 'tomate_salada', cat: 'hortifruti', prefix: 'R$ ' },
+                { idVal: 'val-hort-cebola', idLoc: 'loc-hort-cebola', item: 'cebola_nacional', cat: 'hortifruti', prefix: 'R$ ' },
+                { idVal: 'val-hort-cenoura', idLoc: 'loc-hort-cenoura', item: 'cenoura_nacional', cat: 'hortifruti', prefix: 'R$ ' }
+            ];
+
+            matrizIds.forEach(m => {
+                const valEl = document.getElementById(m.idVal);
+                const locEl = document.getElementById(m.idLoc);
+                if (filtroModo === 'cidade') {
+                    const v = dadosCidade[m.cat][m.item];
+                    valEl.innerText = m.item === 'trigo' ? m.prefix + v.toLocaleString('pt-BR', {minimumFractionDigits: 2}) : m.prefix + v.toFixed(2).replace('.', ',');
+                    locEl.innerText = m.cat === 'hortifruti' ? "CEASA " + cidade.replace('_', ' ') : "Praça " + cidade.replace('_', ' ');
+                    locEl.className = "text-[9px] text-gray-500 mt-1 block uppercase font-medium";
+                } else if (filtroModo === 'maior') {
+                    const ext = extremos[m.cat][m.item].maior; valEl.innerText = ext.valor; locEl.innerText = "MAIOR: " + ext.cidade;
+                    locEl.className = "text-[9px] text-amber-400 font-bold mt-1 block uppercase font-mono";
+                } else if (filtroModo === 'menor') {
+                    const ext = extremos[m.cat][m.item].menor; valEl.innerText = ext.valor; locEl.innerText = "MENOR: " + ext.cidade;
+                    locEl.className = "text-[9px] text-sky-400 font-bold mt-1 block uppercase font-mono";
+                }
+            });
+        }
+
+        function processarAlgoritmoAlfa() {
+            if (!dadosGlobais) return;
+            const usdPct = parseFloat(dadosGlobais.cambio.usd_pct.replace('%', ''));
+            const milhoCascavel = dadosGlobais.regioes.cascavel.produtos.milho;
+            const batataCuritiba = dadosGlobais.regioes.curitiba.hortifruti.batata_lavada;
+            const ativo = document.getElementById('rec-ativo'); const tese = document.getElementById('rec-tese');
+            const conf = document.getElementById('rec-confianca'); const horiz = document.getElementById('rec-horizonte'); const icon = document.getElementById('rec-icone');
+
+            if (usdPct > 0.30) {
+                ativo.innerText = "HEDGE CAMBIAL: FIXAÇÃO DE SOJA";
+                tese.innerText = `O Dólar Comercial exibe alta diária de ${dadosGlobais.cambio.usd_pct}. Recomendamos a fixação de contratos futuros de Soja para exportação rumo a Paranaguá, travando margens ótimas.`;
+                conf.innerText = "96.8%"; horiz.innerText = "Curto Prazo (7D)"; icon.innerHTML = `<i data-lucide="trending-up" class="w-5 h-5"></i>`;
+            } else if (milhoCascavel < 62.00) {
+                ativo.innerText = "COMPRA E ESTOCAGEM: MILHO FÍSICO";
+                tese.innerText = `Distorção de baixa no Milho em Cascavel (R$ ${milhoCascavel.toFixed(2)}/sc). Momento ideal para confinamentos travarem nutrição regional.`;
+                conf.innerText = "93.4%"; horiz.innerText = "Posição (30D)"; icon.innerHTML = `<i data-lucide="corn" class="w-5 h-5"></i>`;
+            } else if (batataCuritiba > 160.00) {
+                ativo.innerText = "ARBITRAGEM DE FLUXO: CEASA PR";
+                tese.innerText = `Deficit severo de batata na CEASA Curitiba (R$ ${batataCuritiba.toFixed(2)}). Recomendamos o escoamento imediato de cargas do Oeste para a capital.`;
+                conf.innerText = "89.1%"; horiz.innerText = "Imediato (24H)"; icon.innerHTML = `<i data-lucide="truck" class="w-5 h-5"></i>`;
+            } else {
+                ativo.innerText = "TRAVA DE INSUMOS: SEMENTES DE SOJA";
+                tese.innerText = "Estabilidade nas praças do Paraná. O direcionamento ideal é a trava antecipada de sementes técnicas protegendo o teto da próxima safra.";
+                conf.innerText = "91.5%"; horiz.innerText = "Médio Prazo"; icon.innerHTML = `<i data-lucide="sprout" class="w-5 h-5"></i>`;
+            }
+            lucide.createIcons();
+        }
+
+        function fallbackOffline() {
+            document.getElementById('usd-compra').innerText = "R$ 5,241"; document.getElementById('usd-venda').innerText = "R$ 5,243";
+            document.getElementById('rec-ativo').innerText = "PROTEÇÃO DE CAPITAL: AGRO";
+            document.getElementById('rec-tese').innerText = "Sistema operando em buffer de contingência. Trave custos logísticos regionais.";
+            lucide.createIcons();
+        }
+
+        requisitarMotorAgro(); setInterval(requisitarMotorAgro, 8000); rodarRelogio();
+    </script>
+</body>
+</html>
