@@ -199,7 +199,7 @@
         async function requisitarMotorAgro() {
             try {
                 // ⚠️ TROQUE ABAIXO PELO LINK DO SEU RENDER COM O /api/v1/mercado NO FINAL
-                const response = await fetch('https://olcapitalagro.onrender.com/api/v1/mercado');
+                const response = await fetch('https://olcapitalagro.com');
                 dadosGlobais = await response.json();
                 
                 document.getElementById('status-conexao').innerText = "MOTOR ATIVO";
